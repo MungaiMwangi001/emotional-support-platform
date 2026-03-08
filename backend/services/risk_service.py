@@ -12,7 +12,7 @@ HIGH_RISK_KEYWORDS = {
     "suicide": 0.9, "kill myself": 0.9, "end my life": 0.9, "want to die": 0.85,
     "self harm": 0.8, "cut myself": 0.8, "overdose": 0.8, "no reason to live": 0.85,
     "hopeless": 0.4, "worthless": 0.4, "give up": 0.3, "can't go on": 0.6,
-    "nobody cares": 0.3, "hate myself": 0.5, "hurting myself": 0.7
+    "nobody cares": 0.3, "hate myself": 0.5, "hurting myself": 0.7, "suicidal": 0.9
 }
 
 EMOTION_WEIGHTS = {

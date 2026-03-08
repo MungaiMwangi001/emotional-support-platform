@@ -10,6 +10,7 @@ services:
     volumes:
       - db_data:/app/data
       - vector_store:/app/vector_store
+      - pip-cache:/root/.cache/pip 
     environment:
       - SECRET_KEY=${SECRET_KEY:-CHANGE_THIS_IN_PRODUCTION}
       - DATABASE_URL=sqlite+aiosqlite:///./data/emotional_support.db
@@ -36,3 +37,4 @@ services:
 volumes:
   db_data:
   vector_store:
+  pip-cache:

@@ -3,7 +3,8 @@ import requests
 import json
 from datetime import datetime
 
-API_BASE = "http://localhost:8000"
+import os
+API_BASE = os.getenv("API_BASE", "http://localhost:8000")
 
 # ─────────────────────────────────────────────
 # Page config
@@ -140,10 +141,10 @@ def api_post(endpoint, data, auth=False):
     if auth and st.session_state.token:
         headers["Authorization"] = f"Bearer {st.session_state.token}"
     try:
-        r = requests.post(f"{API_BASE}{endpoint}", json=data, headers=headers, timeout=60)
+        r = requests.post(f"{API_BASE}{endpoint}", json=data, headers=headers, timeout=300)
         return r
     except requests.exceptions.ConnectionError:
-        st.error("⚠️ Cannot connect to backend. Please ensure the server is running.")
+        st.error(" Cannot connect to backend. Please ensure the server is running.")
         return None
 
 
@@ -152,10 +153,10 @@ def api_get(endpoint):
     if st.session_state.token:
         headers["Authorization"] = f"Bearer {st.session_state.token}"
     try:
-        r = requests.get(f"{API_BASE}{endpoint}", headers=headers, timeout=30)
+        r = requests.get(f"{API_BASE}{endpoint}", headers=headers, timeout=300)
         return r
     except requests.exceptions.ConnectionError:
-        st.error("⚠️ Cannot connect to backend.")
+        st.error(" Cannot connect to backend.")
         return None
 
 
@@ -331,7 +332,7 @@ def page_chat():
             st.form_submit_button("🗑️ Clear", on_click=lambda: st.session_state.update({"chat_history": []}))
 
     if send and user_input.strip():
-        with st.spinner("🤔 Thinking..."):
+        with st.spinner(" Thinking..."):
             r = api_post("/chat/", {"message": user_input}, auth=True)
             if r and r.status_code == 200:
                 data = r.json()
@@ -377,7 +378,7 @@ def page_admin():
 
     st.markdown("---")
 
-    tab1, tab2, tab3 = st.tabs(["⚠️ Flagged Users", "📊 Chat Logs", "📝 System Logs"])
+    tab1, tab2, tab3 = st.tabs([" Flagged Users", "Chat Logs", "📝 System Logs"])
 
     with tab1:
         r = api_get("/admin/flagged-users")

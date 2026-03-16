@@ -1,21 +1,44 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select
 from pydantic import BaseModel
 from database import get_db, Chat, RiskFlag, TherapistRequest, User
-from auth import get_current_user, require_role
-from emotion_detector import detect_emotion, compute_risk_score
-from rag_pipeline import generate_response, filter_unsafe_response
+from auth import require_role
 from config import settings
-from datetime import datetime, timedelta
+from datetime import datetime
+from typing import Tuple
+
+# Import model classes instead of functions
+from emotion_detector import EmotionDetector
+from rag_pipeline import RAGPipeline
 
 router = APIRouter(prefix="/chat", tags=["chat"])
 
+# --- Load heavy models once globally ---
+emotion_model = EmotionDetector(model_name=settings.EMOTION_MODEL)
+rag_chain = RAGPipeline(
+    embedding_model=settings.EMBEDDING_MODEL,
+    knowledge_base_dir=settings.KNOWLEDGE_BASE_DIR,
+    vector_store_path=settings.VECTOR_STORE_PATH
+)
 
+
+# --- Request model ---
 class ChatRequest(BaseModel):
     message: str
 
 
+# --- Helper functions ---
+def detect_emotion(message: str) -> Tuple[str, float]:
+    return emotion_model.predict(message)
+
+
+def generate_response_safe(message: str, emotion: str) -> str:
+    raw = rag_chain.query(message, emotion)
+    return rag_chain.filter(raw)
+
+
+# --- Endpoints ---
 @router.post("/")
 async def chat(
     req: ChatRequest,
@@ -25,20 +48,19 @@ async def chat(
     if not req.message or not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty.")
 
-    message = req.message.strip()[:2000]  # Limit input length
+    message = req.message.strip()[:2000]
 
-    # Emotion detection
+    # --- Emotion detection ---
     emotion, confidence = detect_emotion(message)
 
-    # Risk scoring
-    risk_score = compute_risk_score(message, emotion, confidence)
+    # --- Risk scoring ---
+    risk_score = emotion_model.compute_risk_score(message, emotion, confidence)
     escalation_triggered = risk_score >= settings.RISK_ESCALATION_THRESHOLD
 
-    # Generate RAG response
-    raw_response = generate_response(message, emotion)
-    response = filter_unsafe_response(raw_response)
+    # --- RAG response ---
+    response = generate_response_safe(message, emotion)
 
-    # Add crisis message if escalation triggered
+    # --- Add crisis message if needed ---
     if escalation_triggered:
         crisis_msg = (
             "\n\n⚠️ **I'm concerned about your wellbeing.** "
@@ -50,7 +72,7 @@ async def chat(
         )
         response += crisis_msg
 
-    # Save to DB
+    # --- Save to DB ---
     chat_entry = Chat(
         user_id=current_user.id,
         message=message,

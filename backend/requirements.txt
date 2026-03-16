@@ -6,8 +6,8 @@ python-multipart==0.0.9
 # Auth & Security
 python-jose[cryptography]==3.3.0
 PyJWT==2.8.0
-bcrypt>=4.0.0
-passlib[bcrypt]>=1.7.4
+bcrypt==3.2.2
+passlib[bcrypt]==1.7.4
 
 # Database
 sqlalchemy==2.0.30

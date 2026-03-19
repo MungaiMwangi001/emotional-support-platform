@@ -4,7 +4,7 @@ from typing import Optional
 
 class Settings(BaseSettings):
     # App
-    APP_NAME: str = "AI Student Emotional Support Platform"
+    APP_NAME: str = " Student Emotional Support Platform"
     DEBUG: bool = False
 
     # Security
@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # Database
-    DATABASE_URL: str = "sqlite+aiosqlite:///./emotional_support.db"
+    DATABASE_URL: str 
 
     # Risk Escalation
     RISK_ESCALATION_THRESHOLD: float = 0.65

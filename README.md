@@ -1,3 +1,4 @@
+# 🧠 Salama SPace 
 # SalamaSPace – AI Student Emotional Support Platform
 
 A secure, ethically compliant AI-powered emotional support system for students. Built with FastAPI, Streamlit, HuggingFace Transformers, and LangChain RAG.
@@ -93,7 +94,8 @@ emotional-support-platform/
 │   ├── main.py               # FastAPI app entrypoint
 │   ├── config.py             # Settings & env vars
 │   ├── database.py           # SQLAlchemy models & DB init
-│   ├── auth.py               # JWT auth, password hashing, RBAC
+│   ├── auth.py         
+      # JWT auth, password hashing, RBAC
 │   ├── emotion_detector.py   # HuggingFace emotion model + risk scoring
 │   ├── rag_pipeline.py       # LangChain RAG + response generation
 │   ├── routers/

@@ -6,8 +6,7 @@ import json
 from datetime import datetime
 
 import os
-API_BASE = os.getenv("API_BASE", "https://emotional-support-platform.onrender.com")
-
+API_BASE = os.getenv("API_BASE", "http://localhost:8000")
 
 
 # ─────────────────────────────────────────────

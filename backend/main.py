@@ -23,7 +23,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="AI Student Emotional Support Platform",
+    title="Student Emotional Support Platform",
     description="A secure, ethical AI-powered emotional support system for students.",
     version="1.0.0",
     lifespan=lifespan,
@@ -32,7 +32,9 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://emotional-support-platform-1.onrender.com",  # your frontend URL
+        "https://emotional-support-platform-1.onrender.com",
+        "http://localhost:8501",   # local frontend
+        "http://frontend:8501",    # docker-compose frontend
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -48,7 +50,7 @@ app.include_router(therapist_router)
 @app.get("/")
 async def root():
     return {
-        "app": "AI Student Emotional Support Platform",
+        "app": " Student Emotional Support Platform",
         "version": "1.0.0",
         "status": "running",
         "disclaimer": "This system is NOT a replacement for professional mental health care."

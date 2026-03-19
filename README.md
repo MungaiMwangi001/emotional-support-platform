@@ -1,4 +1,5 @@
 # 🧠 Salama SPace 
+# SalamaSPace – AI Student Emotional Support Platform
 
 A secure, ethically compliant AI-powered emotional support system for students. Built with FastAPI, Streamlit, HuggingFace Transformers, and LangChain RAG.
 
@@ -6,7 +7,7 @@ A secure, ethically compliant AI-powered emotional support system for students. 
 
 ## ⚠️ Disclaimer
 
-**MindBridge is NOT a replacement for professional mental health care.** It provides informational and emotional support only. In a crisis, contact:
+**SalamaSpace is NOT a replacement for professional mental health care.** It provides informational and emotional support only. In a crisis, contact:
 - **Crisis Text Line**: Text HOME to 741741
 - **988 Suicide & Crisis Lifeline**: Call or text 988
 

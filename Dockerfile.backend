@@ -12,17 +12,17 @@ RUN apt-get update && apt-get install -y \
 # Upgrade pip
 RUN pip install --upgrade pip
 
-# Install PyTorch CPU-only first (smaller than full PyTorch image)
+# Install PyTorch CPU-only first
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
-# Copy and install Python dependencies
+# Copy and install requirements
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
 
-# Copy the backend source code
+# Copy backend source
 COPY backend/ .
 
-# Copy the knowledge base (text files for RAG)
+# Copy knowledge base
 COPY knowledge_base/ /app/knowledge_base/
 
 # ------------------------------------------------------------
@@ -37,8 +37,8 @@ RUN python -c "from emotion_detector import EmotionDetector; import config; Emot
 # 2. Pre‑download embeddings and build vector store
 RUN python -c "from rag_pipeline import RAGPipeline; import config; RAGPipeline(config.settings.EMBEDDING_MODEL, config.settings.KNOWLEDGE_BASE_DIR, config.settings.VECTOR_STORE_PATH).query('test', 'neutral')"
 
-# 3. Pre‑download the local LLM (flan-t5-small)
-RUN python -c "from transformers import pipeline; pipeline('text2text-generation', model='google/flan-t5-small', device=-1).__exit__(None, None, None)"
+# 3. Pre‑download the local LLM (flan-t5-small) – using tokenizer + model directly
+RUN python -c "from transformers import AutoTokenizer, AutoModelForSeq2SeqLM; tokenizer = AutoTokenizer.from_pretrained('google/flan-t5-small'); model = AutoModelForSeq2SeqLM.from_pretrained('google/flan-t5-small')"
 
 # Clear the dummy DATABASE_URL (runtime will use the real one from Render)
 ENV DATABASE_URL=""

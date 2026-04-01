@@ -25,8 +25,11 @@ COPY backend/ .
 # Copy knowledge base
 COPY knowledge_base/ /app/knowledge_base/
 
-#EXPOSE 8000
+# --- NEW: Pre-download emotion model ---
+RUN python -c "from emotion_detector import EmotionDetector; import config; EmotionDetector(config.settings.EMOTION_MODEL).predict('test')"
+
+# --- NEW: Pre-build vector store (this will also download embeddings) ---
+RUN python -c "from rag_pipeline import RAGPipeline; import config; RAGPipeline(config.settings.EMBEDDING_MODEL, config.settings.KNOWLEDGE_BASE_DIR, config.settings.VECTOR_STORE_PATH).query('test', 'neutral')"
 
 EXPOSE 10000
-#CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000", "--log-level", "info"]
 CMD uvicorn main:app --host 0.0.0.0 --port $PORT --log-level info

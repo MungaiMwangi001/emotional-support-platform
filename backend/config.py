@@ -1,7 +1,8 @@
 from pydantic_settings import BaseSettings
 from typing import Optional
+import os
 
-
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 class Settings(BaseSettings):
     # App
     APP_NAME: str = " Student Emotional Support Platform"
@@ -19,12 +20,12 @@ class Settings(BaseSettings):
     RISK_ESCALATION_THRESHOLD: float = 0.65
 
     # AI Models
-    EMOTION_MODEL: str = "j-hartmann/emotion-english-distilroberta-base"
+    EMOTION_MODEL: str = "distilbert-base-uncased-emotion"
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 
     # Paths
-    KNOWLEDGE_BASE_DIR: str = "../knowledge_base"
-    VECTOR_STORE_PATH: str = "./vector_store"
+    KNOWLEDGE_BASE_DIR: str =  os.path.join(BASE_DIR, "knowledge_base")
+    VECTOR_STORE_PATH: str = os.path.join(BASE_DIR, "vector_store")
 
     class Config:
         env_file = ".env"

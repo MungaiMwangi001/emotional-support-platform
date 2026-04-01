@@ -1,6 +1,6 @@
 import os
 import logging
-from config import settings
+from config import settings  # lightweight, fine at top
 
 logger = logging.getLogger(__name__)
 
@@ -67,6 +67,7 @@ class RAGPipeline:
     def _get_embeddings(self):
         if self._embeddings is None:
             try:
+                # Import heavy libraries only when needed
                 from langchain_community.embeddings import HuggingFaceEmbeddings
                 self._embeddings = HuggingFaceEmbeddings(
                     model_name=self.embedding_model,
@@ -82,9 +83,11 @@ class RAGPipeline:
         if self._vectorstore is not None:
             return self._vectorstore
         try:
+            # Import heavy libraries only when needed
             from langchain_community.vectorstores import FAISS
             from langchain.text_splitter import RecursiveCharacterTextSplitter
             from langchain_community.document_loaders import TextLoader, DirectoryLoader
+            from langchain.schema import Document
 
             embeddings = self._get_embeddings()
             if embeddings is None:
@@ -101,7 +104,6 @@ class RAGPipeline:
                 kb = self.knowledge_base_dir
                 if not os.path.exists(kb):
                     logger.warning("Knowledge base directory not found, using fallback.")
-                    from langchain.schema import Document
                     docs = [Document(page_content=FALLBACK_KNOWLEDGE, metadata={"source": "fallback"})]
                 else:
                     loader = DirectoryLoader(kb, glob="**/*.txt", loader_cls=TextLoader)
@@ -144,6 +146,7 @@ class RAGPipeline:
     def _generate_with_context(self, message: str, emotion: str, context: str) -> str:
         # Try local Ollama first
         try:
+            # Import httpx only when needed
             import httpx
             resp = httpx.post(
                 "http://localhost:11434/api/generate",

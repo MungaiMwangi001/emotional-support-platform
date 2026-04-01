@@ -7,35 +7,25 @@ from auth import require_role
 from config import settings
 from datetime import datetime
 from typing import Tuple
-
-# Import model classes instead of functions
-from emotion_detector import EmotionDetector
-from rag_pipeline import RAGPipeline
+from dependencies import get_emotion_detector, get_rag_pipeline
 
 router = APIRouter(prefix="/chat", tags=["chat"])
-
-# --- Load heavy models once globally ---
-emotion_model = EmotionDetector(model_name=settings.EMOTION_MODEL)
-rag_chain = RAGPipeline(
-    embedding_model=settings.EMBEDDING_MODEL,
-    knowledge_base_dir=settings.KNOWLEDGE_BASE_DIR,
-    vector_store_path=settings.VECTOR_STORE_PATH
-)
-
 
 # --- Request model ---
 class ChatRequest(BaseModel):
     message: str
 
 
-# --- Helper functions ---
+# --- Helper functions (now fetch instances on each call) ---
 def detect_emotion(message: str) -> Tuple[str, float]:
-    return emotion_model.predict(message)
+    detector = get_emotion_detector()
+    return detector.predict(message)
 
 
 def generate_response_safe(message: str, emotion: str) -> str:
-    raw = rag_chain.query(message, emotion)
-    return rag_chain.filter(raw)
+    rag = get_rag_pipeline()
+    raw = rag.query(message, emotion)
+    return rag.filter(raw)
 
 
 # --- Endpoints ---
@@ -54,7 +44,7 @@ async def chat(
     emotion, confidence = detect_emotion(message)
 
     # --- Risk scoring ---
-    risk_score = emotion_model.compute_risk_score(message, emotion, confidence)
+    risk_score = get_emotion_detector().compute_risk_score(message, emotion, confidence)
     escalation_triggered = risk_score >= settings.RISK_ESCALATION_THRESHOLD
 
     # --- RAG response ---

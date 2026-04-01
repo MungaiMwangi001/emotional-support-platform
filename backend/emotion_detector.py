@@ -1,7 +1,5 @@
-import torch
-from transformers import pipeline
-from typing import Tuple
 import logging
+from typing import Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -30,9 +28,14 @@ class EmotionDetector:
         logger.info(f"EmotionDetector initialised (model will load on first use): {model_name}")
 
     def _get_pipeline(self):
+        """Lazy‑load the Hugging Face pipeline."""
         if self._pipeline is None:
             logger.info(f"Loading emotion detection model: {self.model_name}")
             try:
+                # Import heavy libraries only when needed
+                from transformers import pipeline
+                # Optionally import torch if you need to control device; it may be imported by pipeline anyway
+                # import torch
                 self._pipeline = pipeline(
                     "text-classification",
                     model=self.model_name,

@@ -220,7 +220,7 @@ def page_disclaimer():
 
     st.markdown("""
     <div class="disclaimer">
-        <h3>⚠️ Important Disclaimer</h3>
+        <h3>Important Disclaimer</h3>
         <p><strong>        <h1>SalamaSpace</h1>
 is NOT a replacement for professional mental health care.</strong></p>
         <ul>
@@ -235,7 +235,7 @@ is NOT a replacement for professional mental health care.</strong></p>
 
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("✅ I Understand – Continue to Login", use_container_width=True):
+        if st.button("I Understand – Continue to Login", use_container_width=True):
             st.session_state.page = "login"
             st.rerun()
 
@@ -248,7 +248,7 @@ def page_login():
     </div>
     """, unsafe_allow_html=True)
 
-    tab1, tab2 = st.tabs(["🔑 Login", "📝 Register"])
+    tab1, tab2 = st.tabs([" Login", "Register"])
 
     with tab1:
         with st.form("login_form"):
@@ -270,10 +270,10 @@ def page_login():
                 st.session_state.page = "chat" if data["role"] == "student" else (
                     "admin" if data["role"] == "admin" else "therapist"
                 )
-                st.success("✅ Login successful!")
+                st.success(" Login successful!")
                 st.rerun()
             elif r:
-                st.error(f"❌ {r.json().get('detail', 'Login failed.')}")
+                st.error(f" {r.json().get('detail', 'Login failed.')}")
 
     with tab2:
         with st.form("register_form"):
@@ -285,27 +285,27 @@ def page_login():
 
         if reg_submitted:
             if not consent:
-                st.warning("⚠️ You must consent to data usage to register.")
+                st.warning(" You must consent to data usage to register.")
             else:
                 r = api_post("/auth/register", {"username": new_user, "password": new_pass, "role": role, "consent": consent})
                 if r and r.status_code == 200:
-                    st.success("✅ Registered! Please log in.")
+                    st.success(" Registered! Please log in.")
                 elif r:
-                    st.error(f"❌ {r.json().get('detail', 'Registration failed.')}")
+                    st.error(f"{r.json().get('detail', 'Registration failed.')}")
 
 
 def page_chat():
     # Header
     st.markdown(f"""
     <div class="main-header">
-        <h2>💬 Your Support Space</h2>
+        <h2> Your Support Space</h2>
         <p>A safe, private space to share how you're feeling</p>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
     <div class="disclaimer">
-        🔒 <strong>Your privacy matters.</strong> Messages are stored anonymously and only used to provide support. 
+         <strong>Your privacy matters.</strong> Messages are stored anonymously and only used to provide support. 
         This is not a substitute for professional mental health care.
     </div>
     """, unsafe_allow_html=True)
@@ -322,7 +322,7 @@ def page_chat():
             if item.get("escalated"):
                 st.markdown('<div style="color:#ef4444; font-size:0.8rem;">⚠️ High-risk event detected – crisis resources provided</div>', unsafe_allow_html=True)
 
-            st.markdown(f'<div class="chat-ai">🧠 {item["response"]}</div>', unsafe_allow_html=True)
+            st.markdown(f'<div class="chat-ai"> {item["response"]}</div>', unsafe_allow_html=True)
             st.markdown("---")
 
     # Input
@@ -330,9 +330,9 @@ def page_chat():
         user_input = st.text_area("How are you feeling today?", placeholder="Share what's on your mind...", height=100)
         col1, col2 = st.columns([4, 1])
         with col1:
-            send = st.form_submit_button("💬 Send", use_container_width=True)
+            send = st.form_submit_button(" Send", use_container_width=True)
         with col2:
-            st.form_submit_button("🗑️ Clear", on_click=lambda: st.session_state.update({"chat_history": []}))
+            st.form_submit_button(" Clear", on_click=lambda: st.session_state.update({"chat_history": []}))
 
     if send and user_input.strip():
         with st.spinner(" Thinking..."):
@@ -353,7 +353,7 @@ def page_chat():
 
     # Therapist request button
     st.markdown("---")
-    if st.button("👩‍⚕️ Request Therapist Contact", use_container_width=False):
+    if st.button(" Request Therapist Contact", use_container_width=False):
         r = api_post("/chat/request-therapist", {}, auth=True)
         if r and r.status_code == 200:
             st.success(r.json()["message"])
@@ -364,7 +364,7 @@ def page_chat():
 def page_admin():
     st.markdown("""
     <div class="main-header">
-        <h2>🛡️ Admin Dashboard</h2>
+        <h2>Admin Dashboard</h2>
         <p>System monitoring and management</p>
     </div>
     """, unsafe_allow_html=True)
@@ -374,10 +374,10 @@ def page_admin():
     if r and r.status_code == 200:
         data = r.json()
         col1, col2, col3, col4 = st.columns(4)
-        col1.metric("👥 Total Users", data["total_users"])
-        col2.metric("💬 Total Chats", data["total_chats"])
-        col3.metric("⚠️ Risk Flags", data["total_risk_flags"])
-        col4.metric("📋 Pending Requests", data["pending_therapist_requests"])
+        col1.metric(" Total Users", data["total_users"])
+        col2.metric(" Total Chats", data["total_chats"])
+        col3.metric(" Risk Flags", data["total_risk_flags"])
+        col4.metric(" Pending Requests", data["pending_therapist_requests"])
 
     st.markdown("---")
 
@@ -420,7 +420,7 @@ def page_admin():
 def page_therapist():
     st.markdown("""
     <div class="main-header">
-        <h2>👩‍⚕️ Therapist Portal</h2>
+        <h2> Therapist Portal</h2>
         <p>Manage student contact requests and emotional summaries</p>
     </div>
     """, unsafe_allow_html=True)
@@ -433,7 +433,7 @@ def page_therapist():
             return
 
         for req in requests_data:
-            with st.expander(f"📋 Request #{req['id']} | {req['user_id']} | Status: {req['status'].upper()}"):
+            with st.expander(f" Request #{req['id']} | {req['user_id']} | Status: {req['status'].upper()}"):
                 st.write(f"**Created:** {req['created_at'][:19]}")
                 st.write(f"**Current Status:** {req['status']}")
                 if req.get('notes'):
@@ -457,10 +457,10 @@ def page_therapist():
                 )
                 notes = st.text_input("Notes", value=req.get('notes', ''), key=f"notes_{req['id']}")
 
-                if st.button("💾 Update", key=f"update_{req['id']}"):
+                if st.button("Update", key=f"update_{req['id']}"):
                     upd = api_put(f"/therapist/requests/{req['id']}", {"status": new_status, "notes": notes})
                     if upd and upd.status_code == 200:
-                        st.success("✅ Updated!")
+                        st.success("Updated!")
                         st.rerun()
 
 
@@ -468,41 +468,41 @@ def page_therapist():
 # Sidebar navigation
 # ─────────────────────────────────────────────
 with st.sidebar:
-    st.markdown("## 🧠SalamaSpace")
+    st.markdown("## SalamaSpace")
     st.markdown("---")
 
     if st.session_state.token:
-        st.markdown(f"**👤 {st.session_state.username}**")
+        st.markdown(f"** {st.session_state.username}**")
         st.markdown(f"*Role: {st.session_state.role.capitalize()}*")
         st.markdown("---")
 
         if st.session_state.role == "student":
-            if st.button("💬 Chat"):
+            if st.button(" Chat"):
                 st.session_state.page = "chat"
                 st.rerun()
-            if st.button("📖 Chat History"):
+            if st.button("Chat History"):
                 st.session_state.page = "history"
                 st.rerun()
 
         elif st.session_state.role == "admin":
-            if st.button("🛡️ Dashboard"):
+            if st.button(" Dashboard"):
                 st.session_state.page = "admin"
                 st.rerun()
 
         elif st.session_state.role == "therapist":
-            if st.button("👩‍⚕️ Requests"):
+            if st.button(" Requests"):
                 st.session_state.page = "therapist"
                 st.rerun()
 
         st.markdown("---")
-        if st.button("🚪 Logout"):
+        if st.button(" Logout"):
             logout()
             st.rerun()
 
         st.markdown("---")
         st.markdown("""
         <div style="font-size:0.75rem; opacity:0.8;">
-        🚨 <strong>Crisis Resources</strong><br>
+         <strong>Crisis Resources</strong><br>
         Crisis Text: HOME → 741741<br>
         Lifeline: 988
         </div>
@@ -512,9 +512,9 @@ with st.sidebar:
         st.markdown("---")
         st.markdown("""
         <div style="font-size:0.75rem; opacity:0.8;">
-        🔒 Secure & Private<br>
-        🚫 Not a medical service<br>
-        🆘 Crisis: 988
+         Secure & Private<br>
+         Not a medical service<br>
+         Crisis: 1199
         </div>
         """, unsafe_allow_html=True)
 
@@ -539,7 +539,7 @@ else:
             if not history:
                 st.info("No chat history yet.")
             for item in history:
-                with st.expander(f"🕐 {item['timestamp'][:19]} | {item['emotion'].capitalize()} | Risk: {item['risk_score']:.2f}"):
+                with st.expander(f" {item['timestamp'][:19]} | {item['emotion'].capitalize()} | Risk: {item['risk_score']:.2f}"):
                     st.markdown(f"**You:** {item['message']}")
                     st.markdown(f"**AI:** {item['response'][:300]}...")
                     badge = emotion_badge(item['emotion'], item['confidence'])

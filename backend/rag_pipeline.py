@@ -61,13 +61,13 @@ class RAGPipeline:
         self.vector_store_path = vector_store_path
         self._embeddings = None
         self._vectorstore = None
+        self._llm = None  # lazy-loaded local LLM
         logger.info("RAGPipeline initialised (models load on first use).")
 
     # ── Embeddings ────────────────────────────────────────────────────────────
     def _get_embeddings(self):
         if self._embeddings is None:
             try:
-                # Import heavy libraries only when needed
                 from langchain_community.embeddings import HuggingFaceEmbeddings
                 self._embeddings = HuggingFaceEmbeddings(
                     model_name=self.embedding_model,
@@ -83,7 +83,6 @@ class RAGPipeline:
         if self._vectorstore is not None:
             return self._vectorstore
         try:
-            # Import heavy libraries only when needed
             from langchain_community.vectorstores import FAISS
             from langchain.text_splitter import RecursiveCharacterTextSplitter
             from langchain_community.document_loaders import TextLoader, DirectoryLoader
@@ -120,9 +119,29 @@ class RAGPipeline:
             return None
         return self._vectorstore
 
-    # ── Public API (called by chat_router) ───────────────────────────────────
+    # ── Local LLM (conversational) ──────────────────────────────────────────
+    def _get_llm(self):
+        if self._llm is None:
+            try:
+                from transformers import pipeline
+                logger.info("Loading local LLM (flan-t5-small)...")
+                self._llm = pipeline(
+                    "text2text-generation",
+                    model="google/flan-t5-small",
+                    device=-1,                # CPU
+                    max_new_tokens=150,
+                    do_sample=True,
+                    temperature=0.7
+                )
+                logger.info("LLM loaded.")
+            except Exception as e:
+                logger.error(f"Failed to load LLM: {e}")
+                self._llm = None
+        return self._llm
+
+    # ── Public API ───────────────────────────────────────────────────────────
     def query(self, message: str, emotion: str) -> str:
-        """Generate a supportive response using RAG + fallback."""
+        """Generate a supportive response using RAG + local LLM."""
         try:
             vs = self._get_vectorstore()
             context = ""
@@ -144,40 +163,32 @@ class RAGPipeline:
 
     # ── Internal helpers ──────────────────────────────────────────────────────
     def _generate_with_context(self, message: str, emotion: str, context: str) -> str:
-        # Try local Ollama first
-        try:
-            # Import httpx only when needed
-            import httpx
-            resp = httpx.post(
-                "http://localhost:11434/api/generate",
-                json={
-                    "model": "mistral",
-                    "prompt": (
-                        f"{SYSTEM_PROMPT}\n\nContext from knowledge base:\n{context}\n\n"
-                        f"Student (feeling {emotion}): {message}\n\nAssistant:"
-                    ),
-                    "stream": False,
-                    "options": {"num_predict": 150, "temperature": 0.7},
-                },
-                timeout=30.0,
-            )
-            if resp.status_code == 200:
-                return resp.json().get("response", "").strip()
-        except Exception:
-            pass
+        # Build a conversational prompt
+        prompt = f"""You are a compassionate mental health support assistant. Respond in a warm, conversational way. Ask a follow‑up question if appropriate.
+
+Context (from our knowledge base):
+{context[:1000]}
+
+User's message (they feel {emotion}):
+{message}
+
+Assistant:"""
+
+        llm = self._get_llm()
+        if llm:
+            try:
+                response = llm(prompt, max_new_tokens=150)[0]['generated_text'].strip()
+                if response:
+                    return response
+            except Exception as e:
+                logger.error(f"LLM generation error: {e}")
         return self._template_response(message, emotion, context)
 
     def _template_response(self, message: str, emotion: str, context: str) -> str:
         intro = EMOTION_INTROS.get(emotion, "Thank you for sharing how you're feeling.")
-        tip = ""
-        if context:
-            for line in context.split("."):
-                line = line.strip()
-                if len(line) > 40:
-                    tip = f" {line}."
-                    break
-        closing = " Remember, it's important to reach out to a mental health professional if these feelings persist."
-        return f"{intro}{tip}{closing}"
+        # Add a gentle follow‑up question
+        follow_up = " Would you like to tell me more about what's going on?"
+        return intro + follow_up
 
     def _fallback_response(self, emotion: str) -> str:
         return (

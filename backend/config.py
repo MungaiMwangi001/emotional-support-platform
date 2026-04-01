@@ -1,11 +1,12 @@
-from pydantic_settings import BaseSettings
-from typing import Optional
 import os
+from pydantic_settings import BaseSettings
 
+# Get the absolute path to the backend directory (where config.py resides)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 class Settings(BaseSettings):
     # App
-    APP_NAME: str = " Student Emotional Support Platform"
+    APP_NAME: str = "Student Emotional Support Platform"
     DEBUG: bool = False
 
     # Security
@@ -14,21 +15,20 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60
 
     # Database
-    DATABASE_URL: str 
+    DATABASE_URL: str
 
     # Risk Escalation
     RISK_ESCALATION_THRESHOLD: float = 0.65
 
-    # AI Models
+    # AI Models – using smaller models for speed and memory
     EMOTION_MODEL: str = "distilbert-base-uncased-emotion"
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 
-    # Paths
-    KNOWLEDGE_BASE_DIR: str =  os.path.join(BASE_DIR, "knowledge_base")
+    # Paths – now absolute, using BASE_DIR
+    KNOWLEDGE_BASE_DIR: str = os.path.join(BASE_DIR, "knowledge_base")
     VECTOR_STORE_PATH: str = os.path.join(BASE_DIR, "vector_store")
 
     class Config:
         env_file = ".env"
-
 
 settings = Settings()

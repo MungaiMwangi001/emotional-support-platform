@@ -12,31 +12,39 @@ RUN apt-get update && apt-get install -y \
 # Upgrade pip
 RUN pip install --upgrade pip
 
-# Install PyTorch CPU-only first
+# Install PyTorch CPU-only first (smaller than full PyTorch image)
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 
-# Copy and install requirements
+# Copy and install Python dependencies
 COPY backend/requirements.txt .
 RUN pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
 
-# Copy backend source
+# Copy the backend source code
 COPY backend/ .
 
-# Copy knowledge base
+# Copy the knowledge base (text files for RAG)
 COPY knowledge_base/ /app/knowledge_base/
 
-# ========== NEW: Set dummy database for build ==========
-ENV DATABASE_URL="sqlite:///./test.db"
+# ------------------------------------------------------------
+# Pre‑load models (to avoid downloads at runtime)
+# ------------------------------------------------------------
+# Set a dummy DATABASE_URL so that config.settings can be instantiated
+ENV DATABASE_URL="sqlite:///./dummy.db"
 
-# Pre-download emotion model
+# 1. Pre‑download emotion model
 RUN python -c "from emotion_detector import EmotionDetector; import config; EmotionDetector(config.settings.EMOTION_MODEL).predict('test')"
 
-# Pre-download embeddings and build vector store
+# 2. Pre‑download embeddings and build vector store
 RUN python -c "from rag_pipeline import RAGPipeline; import config; RAGPipeline(config.settings.EMBEDDING_MODEL, config.settings.KNOWLEDGE_BASE_DIR, config.settings.VECTOR_STORE_PATH).query('test', 'neutral')"
 
-# Remove dummy environment variable so it doesn't interfere at runtime
-# (Runtime will get the real DATABASE_URL from Render's environment)
+# 3. Pre‑download the local LLM (flan-t5-small)
+RUN python -c "from transformers import pipeline; pipeline('text2text-generation', model='google/flan-t5-small', device=-1).__exit__(None, None, None)"
+
+# Clear the dummy DATABASE_URL (runtime will use the real one from Render)
 ENV DATABASE_URL=""
 
+# ------------------------------------------------------------
+# Run the app
+# ------------------------------------------------------------
 EXPOSE 10000
 CMD uvicorn main:app --host 0.0.0.0 --port $PORT --log-level info

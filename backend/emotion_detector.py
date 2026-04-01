@@ -32,10 +32,7 @@ class EmotionDetector:
         if self._pipeline is None:
             logger.info(f"Loading emotion detection model: {self.model_name}")
             try:
-                # Import heavy libraries only when needed
                 from transformers import pipeline
-                # Optionally import torch if you need to control device; it may be imported by pipeline anyway
-                # import torch
                 self._pipeline = pipeline(
                     "text-classification",
                     model=self.model_name,
@@ -57,8 +54,11 @@ class EmotionDetector:
         try:
             result = pipe(text[:512])  # truncate for model limits
             if result and result[0]:
-                top = result[0][0]
-                return top["label"].lower(), round(top["score"], 4)
+                top = result[0][0]  # because top_k=1
+                emotion = top["label"].lower()
+                confidence = round(top["score"], 4)
+                logger.info(f"Emotion: {emotion} ({confidence}) for text: {text[:100]}")
+                return emotion, confidence
         except Exception as e:
             logger.error(f"Emotion detection error: {e}")
 

@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     RISK_ESCALATION_THRESHOLD: float = 0.65
 
     # AI Models – using smaller models for speed and memory
-    EMOTION_MODEL: str = "distilbert-base-uncased-emotion"
+    EMOTION_MODEL: str = "bhadresh-savani/distilbert-base-uncased-emotion"
     EMBEDDING_MODEL: str = "sentence-transformers/all-MiniLM-L6-v2"
 
     # Paths – now absolute, using BASE_DIR

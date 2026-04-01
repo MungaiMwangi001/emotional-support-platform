@@ -22,7 +22,7 @@ HIGH_RISK_KEYWORDS = [
 
 
 class EmotionDetector:
-    def __init__(self, model_name: str = "j-hartmann/emotion-english-distilroberta-base"):
+    def __init__(self, model_name: str = "bhadresh-savani/distilbert-base-uncased-emotion"):
         self.model_name = model_name
         self._pipeline = None
         logger.info(f"EmotionDetector initialised (model will load on first use): {model_name}")
